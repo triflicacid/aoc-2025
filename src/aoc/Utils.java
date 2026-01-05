@@ -11,6 +11,14 @@ import java.util.function.Predicate;
 
 public class Utils
 {
+    /**
+     * Print "Hello challenge ..." message
+     */
+    public static void hello(Challenge challenge)
+    {
+        System.out.printf("Hello, Advent of Code %d Day %d!\n", challenge.year(), challenge.day());
+    }
+
     public static String currentWorkingDirectory()
     {
         return Paths.get(".").toAbsolutePath().normalize().toString();

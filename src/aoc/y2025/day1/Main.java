@@ -17,8 +17,7 @@ public class Main
 
     static void main(String[] args)
     {
-        System.out.println("Hello, Advent of Code 2025 Day 1!");
-
+        Utils.hello(CHALLENGE);
         run();
     }
 
