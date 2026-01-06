@@ -5,10 +5,16 @@ import aoc.Utils;
 
 import java.util.List;
 
+/**
+ * PART 1
+ * - Mock data: 3
+ * - Question: 989
+ * PART 2:
+ * - Mock data: 6
+ * - Question: 5941
+ */
 public class Main
 {
-    // mock data answer: 989
-    // answer: 5941
     public static final Challenge CHALLENGE = new Challenge(2025, 1);
 
     private static final boolean DEBUG = false;
