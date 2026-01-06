@@ -37,6 +37,26 @@ public class Utils
     }
 
     /**
+     * Read lines from a file, return as a list (non-empty + trimmed lines only)
+     * @param filename File to read
+     * @param mapper Function to process each line
+     */
+    public static List<String> readLines(String filename)
+    {
+        try (FileReader reader = new FileReader(filename))
+        {
+            return reader.readAllLines().stream()
+                .map(String::trim)
+                .filter(Predicate.not(String::isEmpty))
+                .toList();
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(String.format("Failed to read file <%s> - %s%n", filename, e));
+        }
+    }
+
+    /**
      * Read lines from a file, return list of them mapped using some function (excluding empty strings and null return values)
      * @param filename File to read
      * @param mapper Function to process each line
