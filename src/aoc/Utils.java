@@ -14,9 +14,9 @@ public class Utils
     /**
      * Print "Hello challenge ..." message
      */
-    public static void hello(Challenge challenge)
+    public static void hello(int year, int day)
     {
-        System.out.printf("Hello, Advent of Code %d Day %d!\n", challenge.year(), challenge.day());
+        System.out.printf("Hello, Advent of Code %d Day %d!\n", year, day);
     }
 
     public static String currentWorkingDirectory()
@@ -39,7 +39,6 @@ public class Utils
     /**
      * Read lines from a file, return as a list (non-empty + trimmed lines only)
      * @param filename File to read
-     * @param mapper Function to process each line
      */
     public static List<String> readLines(String filename)
     {

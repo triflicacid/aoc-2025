@@ -1,6 +1,8 @@
 package aoc.y2025.day4;
 
 import aoc.Challenge;
+import aoc.Part;
+import aoc.SourceFile;
 import aoc.Utils;
 
 import java.util.List;
@@ -14,30 +16,23 @@ import java.util.concurrent.atomic.AtomicInteger;
  * - Mock data: 43
  * - Question: 8484
  */
-public class Main
+public class Main extends Challenge
 {
-    public static final Challenge CHALLENGE = new Challenge(2025, 4);
-
-    private static final boolean DEBUG = false;
-    private static final String INPUT_FILE = "data.txt";
-    private static final int PART = 2;
-
-    static void main(String[] args)
+    public Main()
     {
-        Utils.hello(CHALLENGE);
-        run();
+        super(2025, 4, Part.TWO, SourceFile.DATA);
     }
 
-    private static void run()
+    @Override
+    public void run()
     {
-        String filename = CHALLENGE.path() + INPUT_FILE;
-        List<String> lines = Utils.readLines(filename);
+        List<String> lines = Utils.readLines(file());
 
         Grid grid = Grid.parse(lines);
 
         int count = removeAccessibleRolls(grid);
 
-        if (PART == 2)
+        if (part2())
         {
             int justRemoved = count;
             while (justRemoved > 0)
@@ -50,9 +45,9 @@ public class Main
         System.out.println(count);
     }
 
-    private static int removeAccessibleRolls(Grid grid)
+    private int removeAccessibleRolls(Grid grid)
     {
-        if (DEBUG)
+        if (debug)
         {
             // if DEBUG, then we placed blocks... remove them
             grid.iterate(cell -> cell.state() == Grid.State.BLOCKED ? Grid.State.EMPTY : null);
@@ -65,13 +60,13 @@ public class Main
             if (canAccessToiletRollAt(grid, cell.x(), cell.y()))
             {
                 count.getAndIncrement();
-                if (DEBUG) return Grid.State.BLOCKED;
-                if (PART == 2) return Grid.State.EMPTY;
+                if (debug) return Grid.State.BLOCKED;
+                if (part2()) return Grid.State.EMPTY;
             }
             return null;
         });
 
-        if (DEBUG) System.out.println(grid);
+        if (debug) System.out.println(grid);
         return count.get();
     }
 
@@ -80,12 +75,19 @@ public class Main
      * - (x, y) is a toilet roll;
      * - (x, y) has at least 5 empty adjacent neighbours;
      */
-    private static boolean canAccessToiletRollAt(Grid grid, int x, int y)
+    private boolean canAccessToiletRollAt(Grid grid, int x, int y)
     {
-        if (!grid.validPosition(x, y) || grid.get(x, y) != Grid.State.TOILET_ROLL) return false;
+        if (!grid.validPosition(x, y) || grid.get(x, y) != Grid.State.TOILET_ROLL) {return false;}
         List<Grid.State> adjacent = grid.getAdjacent(x, y);
         return adjacent.stream()
             .filter(s -> s == Grid.State.EMPTY)
             .count() > 4;
+    }
+
+    static void main(String[] args)
+    {
+        Challenge c = new Main();
+        c.hello();
+        c.run();
     }
 }

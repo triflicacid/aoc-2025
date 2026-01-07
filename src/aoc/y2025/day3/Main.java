@@ -1,45 +1,36 @@
 package aoc.y2025.day3;
 
 import aoc.Challenge;
+import aoc.Part;
+import aoc.SourceFile;
 import aoc.Utils;
-import aoc.y2025.day1.Instruction;
-import aoc.y2025.day1.Wheel;
 
-import java.nio.CharBuffer;
-import java.util.Arrays;
 import java.util.List;
 
 /**
  * PART 1
- * - Mock data: - 357
- * - Question: - 17694
+ * - Mock data: 357
+ * - Question: 17694
  * PART 2:
- * - Mock data: - 3121910778619
- * - Question: - 175659236361660
+ * - Mock data: 3121910778619
+ * - Question: 175659236361660
  */
-public class Main
+public class Main extends Challenge
 {
-    public static final Challenge CHALLENGE = new Challenge(2025, 3);
-
-    private static final boolean DEBUG = false;
-    private static final String INPUT_FILE = "data.txt";
-    private static final int PART = 2;
-
-    static void main(String[] args)
+    public Main()
     {
-        Utils.hello(CHALLENGE);
-        run();
+        super(2025, 3, Part.TWO, SourceFile.DATA);
     }
 
-    private static void run()
+    @Override
+    public void run()
     {
-        String filename = CHALLENGE.path() + INPUT_FILE;
-        List<BatteryBank> batteryBanks = Utils.readLines(filename, BatteryBank::fromSequence);
+        List<BatteryBank> batteryBanks = Utils.readLines(file(), BatteryBank::fromSequence);
 
-        if (DEBUG)
+        if (debug)
         {
             long joltage = batteryBanks.stream()
-                .mapToLong(Main::calculateJoltage)
+                .mapToLong(this::calculateJoltage)
                 .peek(System.out::println)
                 .sum();
             System.out.println("\n" + joltage);
@@ -47,14 +38,21 @@ public class Main
         else
         {
             long joltage = batteryBanks.stream()
-                .mapToLong(Main::calculateJoltage)
+                .mapToLong(this::calculateJoltage)
                 .sum();
             System.out.println(joltage);
         }
     }
 
-    private static long calculateJoltage(BatteryBank batteryBank)
+    private long calculateJoltage(BatteryBank batteryBank)
     {
-        return batteryBank.joltage(PART == 1 ? 2 : 12);
+        return batteryBank.joltage(part1() ? 2 : 12);
+    }
+
+    static void main(String[] args)
+    {
+        Challenge c = new Main();
+        c.hello();
+        c.run();
     }
 }

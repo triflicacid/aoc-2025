@@ -1,7 +1,8 @@
 package aoc.y2025.day1;
 
 import aoc.Challenge;
-import aoc.Utils;
+import aoc.Part;
+import aoc.SourceFile;
 
 import java.util.List;
 
@@ -13,23 +14,24 @@ import java.util.List;
  * - Mock data: -
  * - Question: -
  */
-public class Main
+public class Main extends Challenge
 {
-    public static final Challenge CHALLENGE = new Challenge(2025, 0);
+    public Main()
+    {
+        super(2025, 1, Part.ONE, SourceFile.DATA);
+//        debug = true;
+    }
 
-    private static final boolean DEBUG = false;
-    private static final String INPUT_FILE = "mock_data.txt";
-    private static final int PART = 1;
+    @Override
+    public void run()
+    {
+        // todo
+    }
 
     static void main(String[] args)
     {
-        Utils.hello(CHALLENGE);
-        run();
-    }
-
-    private static void run()
-    {
-        String filename = CHALLENGE.path() + INPUT_FILE;
-        // todo
+        Challenge c = new Main();
+        c.hello();
+        c.run();
     }
 }

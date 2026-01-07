@@ -1,6 +1,8 @@
 package aoc.y2025.day1;
 
 import aoc.Challenge;
+import aoc.Part;
+import aoc.SourceFile;
 import aoc.Utils;
 
 import java.util.List;
@@ -13,29 +15,23 @@ import java.util.List;
  * - Mock data: 6
  * - Question: 5941
  */
-public class Main
+public class Main extends Challenge
 {
-    public static final Challenge CHALLENGE = new Challenge(2025, 1);
-
-    private static final boolean DEBUG = false;
-    private static final String INPUT_FILE = "data.txt";
-    private static final int PART = 2;
-
-    static void main(String[] args)
+    public Main()
     {
-        Utils.hello(CHALLENGE);
-        run();
+        super(2025, 1, Part.ONE, SourceFile.DATA);
+        debug = true;
     }
 
-    private static void run()
+    @Override
+    public void run()
     {
-        String filename = CHALLENGE.path() + INPUT_FILE;
-        List<Instruction> instructions = Utils.readLines(filename, Instruction::parse);
+        List<Instruction> instructions = Utils.readLines(file(), Instruction::parse);
 
         Wheel wheel = new Wheel(100).set(50);
-        wheel.COUNT_PASS_ZERO = PART == 2;
+        wheel.COUNT_PASS_ZERO = part2();
 
-        if (DEBUG)
+        if (debug)
         {
             instructions.forEach(i -> {
                 wheel.turn(i);
@@ -49,5 +45,12 @@ public class Main
             instructions.forEach(wheel::turn);
             System.out.println(wheel.zero_count());
         }
+    }
+
+    static void main(String[] args)
+    {
+        Challenge c = new Main();
+        c.hello();
+        c.run();
     }
 }

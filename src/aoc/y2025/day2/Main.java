@@ -1,6 +1,8 @@
 package aoc.y2025.day2;
 
 import aoc.Challenge;
+import aoc.Part;
+import aoc.SourceFile;
 import aoc.Utils;
 
 import java.util.Arrays;
@@ -15,24 +17,18 @@ import java.util.stream.LongStream;
  * - Mock data: 4174379265
  * - Question: 27180728081
  */
-public class Main
+public class Main extends Challenge
 {
-    public static final Challenge CHALLENGE = new Challenge(2025, 2);
-
-    private static final boolean DEBUG = true;
-    private static final String INPUT_FILE = "data.txt";
-    private static final int PART = 2;
-
-    static void main(String[] args)
+    public Main()
     {
-        Utils.hello(CHALLENGE);
-        run();
+        super(2025, 2, Part.TWO, SourceFile.DATA);
+        debug = true;
     }
 
-    private static void run()
+    @Override
+    public void run()
     {
-        String filename = CHALLENGE.path() + INPUT_FILE;
-        String data = Utils.readFile(filename);
+        String data = Utils.readFile(file());
 
         var invalidIds = Arrays.stream(data.split(","))
             .map(String::trim)
@@ -44,31 +40,31 @@ public class Main
         System.out.println(invalidIds);
     }
 
-    private static LongStream getInvalidIdsInRange(long min, long max)
+    private LongStream getInvalidIdsInRange(long min, long max)
     {
         return LongStream.rangeClosed(min, max)
             .mapToObj(String::valueOf)
-            .filter(Main::isInvalidId)
+            .filter(this::isInvalidId)
             .mapToLong(Long::parseUnsignedLong);
     }
 
     /**
      * Return if both halves of the given string are equal.
      */
-    private static boolean areHalvesIdentical(String string)
+    private boolean areHalvesIdentical(String string)
     {
         int length = string.length();
-        if (length % 2 != 0) return false;
+        if (length % 2 != 0) {return false;}
 
         String a = string.substring(0, length / 2);
         String b = string.substring(length / 2);
         return a.equals(b);
     }
 
-    private static boolean isInvalidId(String id)
+    private boolean isInvalidId(String id)
     {
         // if part 1, only check if two halves
-        if (PART == 1)
+        if (part1())
         {
             return areHalvesIdentical(id);
         }
@@ -77,14 +73,15 @@ public class Main
         final int length = id.length();
         for (int i = 1; 2 * i <= length; i++)
         {
-            if (length % i != 0) continue;
+            if (length % i != 0) {continue;}
 
             boolean isValid = true;
-            String previousSubstring= null;
+            String previousSubstring = null;
             for (int j = 0; j < length && isValid; j += i)
             {
                 String substring = id.substring(j, j + i);
-                if (previousSubstring != null && !substring.equals(previousSubstring)) isValid = false;
+                if (previousSubstring != null && !substring.equals(previousSubstring))
+                {isValid = false;}
                 previousSubstring = substring;
             }
 
@@ -92,5 +89,12 @@ public class Main
         }
 
         return false;
+    }
+
+    static void main(String[] args)
+    {
+        Challenge c = new Main();
+        c.hello();
+        c.run();
     }
 }
