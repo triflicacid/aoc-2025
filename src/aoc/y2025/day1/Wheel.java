@@ -1,6 +1,8 @@
-package aoc.y2025.day1;
+/*
+ * Copyright (c) 2026 Ruben Saunders. All rights reserved.
+ */
 
-import jdk.jshell.spi.ExecutionControl;
+package aoc.y2025.day1;
 
 /**
  * Describe a wheel with numbers [0, upper_bound).
@@ -9,7 +11,7 @@ import jdk.jshell.spi.ExecutionControl;
  */
 public class Wheel
 {
-    private int upper_bound;
+    private final int upper_bound;
     private int position = 0;
     private int zero_count = 0;
     public boolean COUNT_PASS_ZERO = false;

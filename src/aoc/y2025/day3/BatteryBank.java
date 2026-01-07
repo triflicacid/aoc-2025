@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2026 Ruben Saunders. All rights reserved.
+ */
+
 package aoc.y2025.day3;
 
 import java.nio.CharBuffer;

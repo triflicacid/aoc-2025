@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2026 Ruben Saunders. All rights reserved.
+ */
+
 package aoc;
 
 /**
@@ -74,4 +78,10 @@ public abstract class Challenge
      * Override: the body of the challenge
      */
     public abstract void run();
+
+    @Override
+    public String toString()
+    {
+        return String.format("%s/%s part %d", day, year, part.ordinal() + 1);
+    }
 }

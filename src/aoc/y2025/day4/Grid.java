@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2026 Ruben Saunders. All rights reserved.
+ */
+
 package aoc.y2025.day4;
 
 import java.util.ArrayList;
@@ -6,7 +10,7 @@ import java.util.function.Function;
 
 public class Grid
 {
-    private State[][] grid;
+    private final State[][] grid;
 
     public Grid(State[][] grid)
     {
