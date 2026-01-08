@@ -21,8 +21,8 @@ import java.util.stream.IntStream;
  * - Mock data: 4277556
  * - Question: 5877594983578
  * PART 2:
- * - Mock data: -
- * - Question: -
+ * - Mock data: 3263827
+ * - Question: 11159825706149
  */
 public class Main extends Challenge
 {
@@ -91,7 +91,7 @@ public class Main extends Challenge
                     for (int i = 0, j = 0; i < numberLengths.size(); i++)
                     {
                         group.add(line.substring(j + i, j + i + numberLengths.get(i))
-                            .replace(' ', '0')
+                            //.replace(' ', '0')
                             .chars()
                             .mapToObj(c -> (char) c)
                             .toList());
@@ -107,6 +107,7 @@ public class Main extends Challenge
                         .map(String::valueOf)
                         .reduce(String::concat)
                         .get())
+                    .map(String::trim)
                     .map(Long::parseLong)
                     .toList())
                 .toList();
