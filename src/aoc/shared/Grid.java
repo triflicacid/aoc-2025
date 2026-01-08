@@ -2,19 +2,30 @@
  * Copyright (c) 2026 Ruben Saunders. All rights reserved.
  */
 
-package aoc.y2025.day4;
+package aoc.shared;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
-public class Grid
+/**
+ * Represents an WxH grid of state of type T
+ */
+public class Grid<T>
 {
-    private final State[][] grid;
+    private final T[][] grid;
+    private final Supplier<T> emptySupplier;
 
-    public Grid(State[][] grid)
+    public Grid(T[][] grid, Supplier<T> emptySupplier)
     {
         this.grid = grid;
+        this.emptySupplier = emptySupplier;
+    }
+
+    public Grid(T[][] grid)
+    {
+        this(grid, null);
     }
 
     public int width()
@@ -32,23 +43,28 @@ public class Grid
         return x >= 0 && x < width() && y >= 0 && y < height();
     }
 
-    public State get(int x, int y)
+    private T getEmpty()
     {
-        return validPosition(x, y) ? grid[y][x] : State.EMPTY;
+        return emptySupplier == null ? null : emptySupplier.get();
     }
 
-    public void set(int x, int y, State state)
+    public T get(int x, int y)
+    {
+        return validPosition(x, y) ? grid[y][x] : getEmpty();
+    }
+
+    public void set(int x, int y, T el)
     {
         assert validPosition(x, y);
-        grid[y][x] = state;
+        grid[y][x] = el;
     }
 
     /**
      * Get the eight adjacent positions to a position, returned top-left to bottom-right
      */
-    public List<State> getAdjacent(int x, int y)
+    public List<T> getAdjacent(int x, int y)
     {
-        List<State> adjacent = new ArrayList<>();
+        List<T> adjacent = new ArrayList<>();
         for (int dy = -1; dy <= 1; dy++)
         {
             for (int dx = -1; dx <= 1; dx++)
@@ -63,13 +79,13 @@ public class Grid
     /**
      * Iterate through the grid, executing the given function on each cell and setting the cell to the return value (if it is not null)
      */
-    public void iterate(Function<Cell, State> action)
+    public void iterate(Function<Cell<T>, T> action)
     {
         for (int y = 0; y < height(); y++)
         {
             for (int x = 0; x < width(); x++)
             {
-                State newState = action.apply(new Cell(x, y, grid[y][x]));
+                T newState = action.apply(new Cell<>(x, y, grid[y][x]));
                 if (newState != null) grid[y][x] = newState;
             }
         }
@@ -92,47 +108,34 @@ public class Grid
 
     /**
      * Create grid from a list of lines like '@...@.@@' where '.' is empty and '@' is toilet roll
+     * @param lines Lines to generate from
+     * @param getState given char from input, return state
+     * @param emptySupplier supplier for empty/OOB location queries, defaults to null
      */
-    public static Grid parse(List<String> lines)
+    public static <T> Grid<T> parse(List<String> lines, Function<Character, T> getState, Supplier<T> emptySupplier)
     {
         int width = lines.getFirst().length();
         int height = lines.size();
-        State[][] grid = new State[width][height];
+        T[][] grid = (T[][]) new Object[width][height];
 
         for (int y = 0; y < height; y++)
         {
             String line = lines.get(y);
             for (int x = 0; x < width; x++)
             {
-                grid[y][x] = State.fromString(line.charAt(x)) ;
+                T state = getState.apply(line.charAt(x));
+                grid[y][x] = state == null ? emptySupplier == null ? null : emptySupplier.get() : state;
             }
         }
-        return new Grid(grid);
+
+        return new Grid<>(grid, emptySupplier);
     }
 
-    public enum State
+    public static <T> Grid<T> parse(List<String> lines, Function<Character, T> getState)
     {
-        EMPTY, TOILET_ROLL, BLOCKED;
-
-        public String toString()
-        {
-           return switch (this)
-           {
-               case EMPTY -> ".";
-               case TOILET_ROLL -> "@";
-               case BLOCKED -> "x";
-           };
-        }
-
-        public static State fromString(char c)
-        {
-            if (c == '.') return EMPTY;
-            if (c == '@') return TOILET_ROLL;
-            if (c == 'x') return BLOCKED;
-            return null;
-        }
+        return parse(lines, getState, null);
     }
 
-    public record Cell(int x, int y, State state)
+    public record Cell<T>(int x, int y, T state)
     {}
 }

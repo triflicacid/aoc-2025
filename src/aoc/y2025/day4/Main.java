@@ -8,6 +8,7 @@ import aoc.Challenge;
 import aoc.Part;
 import aoc.SourceFile;
 import aoc.Utils;
+import aoc.shared.Grid;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -32,7 +33,7 @@ public class Main extends Challenge
     {
         List<String> lines = Utils.readLines(file());
 
-        Grid grid = Grid.parse(lines);
+        Grid<State> grid = Grid.parse(lines, State::parse, () -> State.EMPTY);
 
         int count = removeAccessibleRolls(grid);
 
@@ -49,12 +50,12 @@ public class Main extends Challenge
         System.out.println(count);
     }
 
-    private int removeAccessibleRolls(Grid grid)
+    private int removeAccessibleRolls(Grid<State> grid)
     {
         if (debug)
         {
             // if DEBUG, then we placed blocks... remove them
-            grid.iterate(cell -> cell.state() == Grid.State.BLOCKED ? Grid.State.EMPTY : null);
+            grid.iterate(cell -> cell.state() == State.BLOCKED ? State.EMPTY : null);
 
             System.out.println(grid);
         }
@@ -64,8 +65,8 @@ public class Main extends Challenge
             if (canAccessToiletRollAt(grid, cell.x(), cell.y()))
             {
                 count.getAndIncrement();
-                if (debug) return Grid.State.BLOCKED;
-                if (part2()) return Grid.State.EMPTY;
+                if (debug) return State.BLOCKED;
+                if (part2()) return State.EMPTY;
             }
             return null;
         });
@@ -79,12 +80,12 @@ public class Main extends Challenge
      * - (x, y) is a toilet roll;
      * - (x, y) has at least 5 empty adjacent neighbours;
      */
-    private boolean canAccessToiletRollAt(Grid grid, int x, int y)
+    private boolean canAccessToiletRollAt(Grid<State> grid, int x, int y)
     {
-        if (!grid.validPosition(x, y) || grid.get(x, y) != Grid.State.TOILET_ROLL) {return false;}
-        List<Grid.State> adjacent = grid.getAdjacent(x, y);
+        if (!grid.validPosition(x, y) || grid.get(x, y) != State.TOILET_ROLL) {return false;}
+        List<State> adjacent = grid.getAdjacent(x, y);
         return adjacent.stream()
-            .filter(s -> s == Grid.State.EMPTY)
+            .filter(s -> s == State.EMPTY)
             .count() > 4;
     }
 
