@@ -11,7 +11,6 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 public class Utils
 {
@@ -41,7 +40,8 @@ public class Utils
     }
 
     /**
-     * Read lines from a file, return as a list (non-empty + trimmed lines only)
+     * Read lines from a file, return as a list (each line is trimmed)
+     *
      * @param filename File to read
      */
     public static List<String> readLines(String filename)
@@ -50,7 +50,6 @@ public class Utils
         {
             return reader.readAllLines().stream()
                 .map(String::trim)
-                .filter(Predicate.not(String::isEmpty))
                 .toList();
         }
         catch (IOException e)
@@ -60,7 +59,7 @@ public class Utils
     }
 
     /**
-     * Read lines from a file, return list of them mapped using some function (excluding empty strings and null return values)
+     * Read lines from a file, return list of them mapped using some function (excluding null return values)
      * @param filename File to read
      * @param mapper Function to process each line
      */
@@ -70,7 +69,6 @@ public class Utils
         {
             return reader.readAllLines().stream()
                 .map(String::trim)
-                .filter(Predicate.not(String::isEmpty))
                 .map(mapper)
                 .filter(Objects::nonNull)
                 .toList();
