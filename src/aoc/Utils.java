@@ -49,7 +49,7 @@ public class Utils
         try (FileReader reader = new FileReader(filename))
         {
             return reader.readAllLines().stream()
-                .map(String::trim)
+                .map(String::stripTrailing)
                 .toList();
         }
         catch (IOException e)
