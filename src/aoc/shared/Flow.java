@@ -15,21 +15,23 @@ import java.util.function.Predicate;
 /**
  * Represents a pipeline of operations.
  * Operations are lazy, meaning each operation is only executed if a result is required.
+ * At each stage, the entire internal list is processed. This differs from streams.
  *
- * @param <T> Element type of the flow.
+ * @param <S> Source type
+ * @param <T> Result type
  */
-public class Flow<T>
+public final class Flow<S, T>
 {
-    private final List<T> source;
+    private final List<? extends S> source;
     private final List<Operation<?, ?>> operations;
 
-    private Flow(List<T> source)
+    private Flow(List<? extends S> source)
     {
         this.source = source;
         this.operations = new ArrayList<>();
     }
 
-    private Flow(List<T> source, List<Operation<?, ?>> operations)
+    private Flow(List<? extends S> source, List<Operation<?, ?>> operations)
     {
         this.source = source;
         this.operations = operations;
@@ -42,7 +44,7 @@ public class Flow<T>
      * @param operation Operation to append.
      * @return New flow.
      */
-    public <R> Flow<T> chain(Operation<T, R> operation)
+    public <R> Flow<S, R> chain(Operation<? super T, ? extends R> operation)
     {
         List<Operation<?, ?>> newOps = new ArrayList<>(operations);
         newOps.add(operation);
@@ -55,7 +57,7 @@ public class Flow<T>
      * @param predicate predicate to run on each element
      * @return new flow
      */
-    public Flow<T> filter(Predicate<T> predicate)
+    public Flow<S, T> filter(Predicate<T> predicate)
     {
         return chain(xs -> ListUtils.filter(xs, predicate));
     }
@@ -67,7 +69,7 @@ public class Flow<T>
      * @param <R> Result type of the mapper
      * @return new flow
      */
-    public <R> Flow<T> map(Function<? super T, ? extends R> mapper)
+    public <R> Flow<S, R> map(Function<? super T, ? extends R> mapper)
     {
         return chain(xs -> ListUtils.map(xs, mapper));
     }
@@ -79,7 +81,7 @@ public class Flow<T>
      * @param <R> Element result type of the mapper
      * @return new flow
      */
-    public <R> Flow<T> flatMap(Function<? super T, List<? extends R>> mapper)
+    public <R> Flow<S, R> flatMap(Function<? super T, List<? extends R>> mapper)
     {
         return chain(xs -> ListUtils.flatMap(xs, mapper));
     }
@@ -89,17 +91,17 @@ public class Flow<T>
      *
      * @param decider predicate to decide which branch to pass the given element to
      * @param trueBranch branch for `true` elements
-     * @param falseBranch branch for`false` elements
+     * @param falseBranch branch for `false` elements
      * @param joiner function to join the two branches together. As many elements will be merged as possible, with the other elements ignored.
      * @param <A> resultant type of the truthy branch
      * @param <B> resultant type of the falsy branch
      * @param <R> resultant type of the joiner
      * @return New flow.
      */
-    public <A, B, R> Flow<T> split(
+    public <A, B, R> Flow<S, R> split(
         Predicate<T> decider,
-        Function<Flow<T>, Flow<A>> trueBranch,
-        Function<Flow<T>, Flow<B>> falseBranch,
+        Function<Flow<T, T>, Flow<T, A>> trueBranch,
+        Function<Flow<T, T>, Flow<T, B>> falseBranch,
         BiFunction<A, B, R> joiner
     )
     {
@@ -119,10 +121,10 @@ public class Flow<T>
                 }
             }
 
-            return ListUtils.zip(
-                trueBranch.apply(of(trueList)).collect(),
-                falseBranch.apply(of(falseList)).collect(),
-                joiner);
+            Flow<T, A> trueFlow = trueBranch.apply(Flow.of(trueList));
+            Flow<T, B> falseFlow = falseBranch.apply(Flow.of(falseList));
+
+            return ListUtils.zip(trueFlow.collect(), falseFlow.collect(), joiner);
         });
     }
 
@@ -137,9 +139,9 @@ public class Flow<T>
      * @param <R> resultant type of the joiner
      * @return New flow.
      */
-    public <A, B, R> Flow<T> split(
-        Function<Flow<T>, Flow<A>> leftBranch,
-        Function<Flow<T>, Flow<B>> rightBranch,
+    public <A, B, R> Flow<S, R> split(
+        Function<Flow<T, T>, Flow<T, A>> leftBranch,
+        Function<Flow<T, T>, Flow<T, B>> rightBranch,
         BiFunction<A, B, R> joiner
     )
     {
@@ -157,7 +159,7 @@ public class Flow<T>
      * @param initial Initial value (is not included in the result list)
      * @param <R> Result type of the scan, allows for flexibility when R != T.
      */
-    public <R> Flow<T> scan(BiFunction<R, T, R> scanner, R initial)
+    public <R> Flow<S, ? extends R> scan(BiFunction<R, T, R> scanner, R initial)
     {
         return chain(xs -> ListUtils.scan(xs, scanner, initial));
     }
@@ -180,7 +182,7 @@ public class Flow<T>
      * @param consumer Accept each element.
      * @return New flow.
      */
-    public Flow<T> tee(Consumer<T> consumer)
+    public Flow<S, T> tee(Consumer<T> consumer)
     {
         return chain(input -> {
             for (T item : input)
@@ -197,7 +199,7 @@ public class Flow<T>
      * @param consumer Accept the flow.
      * @return New flow.
      */
-    public Flow<T> teeFlow(Consumer<Flow<T>> consumer)
+    public Flow<S, T> teeFlow(Consumer<Flow<T, T>> consumer)
     {
         return chain(input -> {
             consumer.accept(of(List.copyOf(input)));
@@ -258,6 +260,16 @@ public class Flow<T>
         return evaluate();
     }
 
+    /**
+     * Same as collect, but still wrapped in a flow.
+     *
+     * @return evaluated flow.
+     */
+    public Flow<T, T> flush()
+    {
+        return of(collect());
+    }
+
     private <R> List<R> evaluate()
     {
         List result = source;
@@ -269,49 +281,38 @@ public class Flow<T>
     }
 
     /**
-     * Force evaluation of the flow, applying any pending operations.
-     *
-     * @return The CURRENT flow, after it has been evaluated.
-     */
-    public Flow<T> flush()
-    {
-        evaluate();
-        return this;
-    }
-
-    /**
      * Merge the given flow into this one (both flows are fully evaluated before merging)
      *
      * @param other com.ruben.Flow to append to this one.
      * @return New merged flow
      */
-    public Flow<T> append(Flow<T> other)
+    public Flow<T, T> append(Flow<S, T> other)
     {
         List<T> merged = new ArrayList<>(collect());
         merged.addAll(other.collect());
-        return new Flow<>(merged);
+        return of(merged);
     }
 
     /**
-     * (Potentially dangerous) add elements into the source without evaluating any operations.
+     * (Potentially dangerous) add elements into the source _without_ evaluating any operations.
      *
      * @param newElements elements to append to this source
-     * @return New flow with eements appended
+     * @return New flow with elements appended
      */
-    public Flow<T> append(List<T> newElements)
+    public Flow<S, T> append(List<S> newElements)
     {
-        List<T> newSource = new ArrayList<>(source);
+        List<S> newSource = new ArrayList<>(source);
         newSource.addAll(newElements);
-        return new Flow<>(newSource, operations);
+        return new Flow<>(newSource, new ArrayList<>(operations));
     }
 
     /**
      * Evaluate and take the first `n` elements of the flow.
      *
      * @param n The number of elements to keep from the start of the flow
-     * @return New flow
+     * @return New flow containing the first `n` elements
      */
-    public Flow<T> take(int n)
+    public Flow<T, T> take(int n)
     {
         if (n <= 0) {return empty();}
 
@@ -324,13 +325,14 @@ public class Flow<T>
      * Evaluate and drop the first `n` elements of the flow.
      *
      * @param n The number of elements to discard from the start of the flow
-     * @return New flow
+     * @return New flow excluding the first `n` elements of the flow
      */
-    public Flow<T> drop(int n)
+    public Flow<T, T> drop(int n)
     {
         List<T> evaluated = collect();
-        List<T> result = n <=
-            0 ? evaluated : evaluated.subList(Math.min(n, evaluated.size()), evaluated.size());
+        List<T> result = n <= 0
+                ? evaluated
+                : evaluated.subList(Math.min(n, evaluated.size()), evaluated.size());
         return new Flow<>(result);
     }
 
@@ -374,9 +376,9 @@ public class Flow<T>
      * @param <T> Type of the flow's elements.
      * @return A flow.
      */
-    public static <T> Flow<T> of(List<? super T> source)
+    public static <T> Flow<T, T> of(List<? extends T> source)
     {
-        return new Flow<>((List<T>) source);
+        return new Flow<>(source);
     }
 
     /**
@@ -386,7 +388,8 @@ public class Flow<T>
      * @param <T> Type of the flow's elements.
      * @return A flow.
      */
-    public static <T> Flow<T> of(T... elements)
+    @SafeVarargs
+    public static <T> Flow<T, T> of(T... elements)
     {
         return new Flow<>(List.of(elements));
     }
@@ -397,7 +400,7 @@ public class Flow<T>
      * @param <T> Type of the flow's elements.
      * @return A flow.
      */
-    public static <T> Flow<T> empty()
+    public static <T> Flow<T, T> empty()
     {
         return new Flow<>(new ArrayList<>());
     }
@@ -413,7 +416,7 @@ public class Flow<T>
      * @param <R> Element type of resultant flow.
      * @return New flow.
      */
-    public static <A, B, R> Flow<R> zip(Flow<A> a, Flow<B> b, BiFunction<A, B, R> zipper)
+    public static <S, A, B, R> Flow<R, R> zip(Flow<? extends S, A> a, Flow<? extends S, B> b, BiFunction<A, B, R> zipper)
     {
         return of(ListUtils.zip(a.collect(), b.collect(), zipper));
     }
@@ -424,7 +427,7 @@ public class Flow<T>
      * @param b Second flow to zip. Once given to this method, it should NOT be interacted with. It is only evaluated when needed.
      * @param zipper Function to combine elements from each flow.
      */
-    public <B, R> Flow<T> zip(Flow<B> b, BiFunction<T, B, R> zipper)
+    public <B, R> Flow<S, R> zip(Flow<? extends S, B> b, BiFunction<T, B, R> zipper)
     {
         return chain(input -> ListUtils.zip(input, b.collect(), zipper));
     }
@@ -440,7 +443,7 @@ public class Flow<T>
      * @param <R> Element type of resultant flow.
      * @return New flow.
      */
-    public static <A, B, R> Flow<R> permute(Flow<A> a, Flow<B> b, BiFunction<A, B, R> zipper)
+    public static <S, A, B, R> Flow<R, R> permute(Flow<? extends S, A> a, Flow<? extends S, B> b, BiFunction<A, B, R> zipper)
     {
         return of(ListUtils.permute(a.collect(), b.collect(), zipper));
     }
@@ -451,7 +454,7 @@ public class Flow<T>
      * @param b Second flow to permute. Once given to this method, it should NOT be interacted with. It is only evaluated when needed.
      * @param zipper Function to combine elements from each flow.
      */
-    public <B, R> Flow<T> permute(Flow<B> b, BiFunction<T, B, R> zipper)
+    public <B, R> Flow<S, R> permute(Flow<? extends S, B> b, BiFunction<T, B, R> zipper)
     {
         return chain(input -> ListUtils.permute(input, b.collect(), zipper));
     }
@@ -464,7 +467,7 @@ public class Flow<T>
      * @param <T> Element type of each flow.
      * @return New flow.
      */
-    public static <T> Flow<T> interleave(Flow<T> a, Flow<T> b)
+    public static <S, T> Flow<T, T> interleave(Flow<? extends S, T> a, Flow<? extends S, T> b)
     {
         return of(ListUtils.interleave(a.collect(), b.collect()));
     }
@@ -472,7 +475,7 @@ public class Flow<T>
     /**
      * `Flow.interleave` with this flow provided as the first.
      */
-    public Flow<T> interleave(Flow<T> other)
+    public Flow<S, T> interleave(Flow<? extends S, T> other)
     {
         return chain(xs -> ListUtils.interleave(xs, other.collect()));
     }
@@ -480,11 +483,11 @@ public class Flow<T>
     /**
      * Defines an operation that transforms a list of elements.
      *
-     * @param <T> Original element type.
-     * @param <R> Resultant element type.
+     * @param <I> Original element type.
+     * @param <O> Resultant element type.
      */
-    public interface Operation<T, R>
+    public interface Operation<I, O>
     {
-        List<R> apply(List<T> input);
+        List<O> apply(List<I> input);
     }
 }
