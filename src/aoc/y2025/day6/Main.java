@@ -9,6 +9,7 @@ import aoc.Part;
 import aoc.SourceFile;
 import aoc.Utils;
 import aoc.shared.ListUtils;
+import aoc.shared.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -85,7 +86,7 @@ public class Main extends Challenge
 
             numbers = ListUtils.transpose(lines.subList(0, lines.size() - 1)
                 .stream()
-                .map(line -> padRight(line, maxLineLength, ' '))
+                .map(line -> StringUtils.padRight(line, maxLineLength, ' '))
                 .map(line -> {
                     List<List<Character>> group = new ArrayList<>();
                     for (int i = 0, j = 0; i < numberLengths.size(); i++)
@@ -113,7 +114,7 @@ public class Main extends Challenge
                 .toList();
         }
 
-        System.out.println(numbers);
+        if (debug) System.out.println(numbers);
 
         long sum = numbers.stream()
             .mapToLong(nums -> {
@@ -123,15 +124,6 @@ public class Main extends Challenge
             })
             .sum();
         System.out.println(sum);
-    }
-
-
-
-    private String padRight(String s, int length, char c)
-    {
-        StringBuilder sBuilder = new StringBuilder(s);
-        while (sBuilder.length() < length) sBuilder.append(c);
-        return sBuilder.toString();
     }
 
     static void main(String[] args)
