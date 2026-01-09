@@ -5,11 +5,13 @@
 package aoc.shared;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.IntStream;
 
 public class ListUtils
 {
@@ -268,6 +270,27 @@ public class ListUtils
         List<T> result = new ArrayList<>(a);
         result.addAll(b);
         return result;
+    }
+
+    /**
+     * Transpose a nested list structure
+     * @param matrix Matrix/nested list to transpose
+     * @return the transposed list
+     * @param <T>
+     */
+    public static <T> List<List<T>> transpose(List<List<T>> matrix)
+    {
+        int maxLength = matrix.stream().mapToInt(List::size).max().orElse(0);
+        if (maxLength == 0) return List.of();
+
+        List<Iterator<T>> rows = matrix.stream().map(List::iterator).toList();
+        // for each [0, maxLength), we want to insert the element at the cursor in each row
+        return IntStream.range(0, maxLength)
+                .mapToObj(_ -> rows.stream()
+                        .filter(Iterator::hasNext)
+                        .map(Iterator::next)
+                        .toList())
+                .toList();
     }
 }
 

@@ -8,13 +8,13 @@ import aoc.Challenge;
 import aoc.Part;
 import aoc.SourceFile;
 import aoc.Utils;
+import aoc.shared.ListUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.IntStream;
 
 /**
  * PART 1
@@ -60,7 +60,7 @@ public class Main extends Challenge
                     .toList())
                 .toList();
             // transpose so each inner list contains a column
-            numbers = transpose(numbers);
+            numbers = ListUtils.transpose(numbers);
         }
         else
         {
@@ -68,7 +68,7 @@ public class Main extends Challenge
                 .map(c -> c.charAt(0))
                 .iterator();
 
-            List<Integer> numberLengths = transpose(lines
+            List<Integer> numberLengths = ListUtils.transpose(lines
                 .subList(0, lines.size() - 1)
                 .stream()
                 .map(line -> Arrays.stream(line.split("\\D+"))
@@ -83,7 +83,7 @@ public class Main extends Challenge
                 .toList();
             int maxLineLength = lines.stream().mapToInt(String::length).max().orElse(0);
 
-            numbers = transpose(lines.subList(0, lines.size() - 1)
+            numbers = ListUtils.transpose(lines.subList(0, lines.size() - 1)
                 .stream()
                 .map(line -> padRight(line, maxLineLength, ' '))
                 .map(line -> {
@@ -101,7 +101,7 @@ public class Main extends Challenge
                 })
                 .toList())
                 .stream()
-                .map(this::transpose)
+                .map(ListUtils::transpose)
                 .map(groups -> groups.stream()
                     .map(digits -> digits.stream()
                         .map(String::valueOf)
@@ -125,20 +125,7 @@ public class Main extends Challenge
         System.out.println(sum);
     }
 
-    private <T> List<List<T>> transpose(List<List<T>> matrix)
-    {
-        int maxLength = matrix.stream().mapToInt(List::size).max().orElse(0);
-        if (maxLength == 0) return List.of();
 
-        List<Iterator<T>> rows = matrix.stream().map(List::iterator).toList();
-        // for each [0, maxLength), we want to insert the element at the cursor in each row
-        return IntStream.range(0, maxLength)
-            .mapToObj(_ -> rows.stream()
-                .filter(Iterator::hasNext)
-                .map(Iterator::next)
-                .toList())
-            .toList();
-    }
 
     private String padRight(String s, int length, char c)
     {
