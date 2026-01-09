@@ -7,6 +7,7 @@ package aoc.shared;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
@@ -53,6 +54,11 @@ public class Grid<T>
         return validPosition(x, y) ? grid[y][x] : getEmpty();
     }
 
+    public Cell<T> cellAt(int x, int y)
+    {
+        return new Cell<>(x, y, get(x, y));
+    }
+
     public void set(int x, int y, T el)
     {
         assert validPosition(x, y);
@@ -91,6 +97,22 @@ public class Grid<T>
         }
     }
 
+    /**
+     * Return the first cell which matches the given predicate, may return null
+     */
+    public Cell<T> find(Predicate<Cell<T>> pred)
+    {
+        for (int y = 0; y < height(); y++)
+        {
+            for (int x = 0; x < width(); x++)
+            {
+                Cell<T> cell = new Cell<>(x, y, grid[y][x]);
+                if (pred.test(cell)) return cell;
+            }
+        }
+        return null;
+    }
+
     @Override
     public String toString()
     {
@@ -116,7 +138,7 @@ public class Grid<T>
     {
         int width = lines.getFirst().length();
         int height = lines.size();
-        T[][] grid = (T[][]) new Object[width][height];
+        T[][] grid = (T[][]) new Object[height][width];
 
         for (int y = 0; y < height; y++)
         {
@@ -137,5 +159,10 @@ public class Grid<T>
     }
 
     public record Cell<T>(int x, int y, T state)
-    {}
+    {
+        public Location location()
+        {
+            return new Location(x, y);
+        }
+    }
 }
