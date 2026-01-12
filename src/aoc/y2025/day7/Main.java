@@ -10,19 +10,22 @@ import aoc.SourceFile;
 import aoc.Utils;
 import aoc.shared.Grid;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * PART 1
  * - Mock data: 21
  * - Question: 1570
  * PART 2:
- * - Mock data: -
- * - Question: -
+ * - Mock data: 40
+ * - Question: 15118009521693
  */
 public class Main extends Challenge
 {
     public Main()
     {
-        super(2025, 7, Part.TWO, SourceFile.MOCK_DATA);
+        super(2025, 7, Part.TWO, SourceFile.DATA);
         debug = true;
     }
 
@@ -57,10 +60,50 @@ public class Main extends Challenge
         System.out.println(part1() ? manifold.countSplits() : manifold.countBeams());
     }
 
+    /**
+     * A shorter solution.
+     */
+    public void run2()
+    {
+        List<String> grid = Utils.readLines(file());
+        int[][] beams = new int[grid.size()][grid.getFirst().length()];
+
+        for (int y = 0; y < beams.length; y++)
+        {
+            for (int x = 0; x < beams[y].length; x++)
+            {
+                if (grid.get(y).charAt(x) == 'S')
+                {
+                    beams[y][x] = 1;
+                }
+
+                if (y < 1)
+                    continue;
+
+                if (x > 0 && grid.get(y - 1).charAt(x - 1) == '^')
+                {
+                    beams[y][x] += beams[y - 1][x - 1];
+                }
+                if (x < beams[y].length - 1 && grid.get(y - 1).charAt(x + 1) == '^')
+                {
+                    beams[y][x] += beams[y - 1][x + 1];
+                }
+                if (grid.get(y - 1).charAt(x) != '^')
+                {
+                    beams[y][x] += beams[y - 1][x];
+                }
+            }
+        }
+
+        int totalBeams = Arrays.stream(beams[beams.length - 1]).sum();
+        System.out.println(totalBeams);
+    }
+
     static void main(String[] args)
     {
-        Challenge c = new Main();
+        Main c = new Main();
         c.hello();
         c.run();
+        //c.run2();
     }
 }

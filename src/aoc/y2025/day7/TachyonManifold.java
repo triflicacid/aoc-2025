@@ -132,7 +132,8 @@ public class TachyonManifold
         {
             grid.set(newLocation.x(), newLocation.y(), State.BEAM);
         }
-        beams.add(beam.createNew(newLocation));
+        createBeam(beams, beam.createNew(newLocation));
+//        beams.add(beam.createNew(newLocation));
     }
 
     /**
@@ -185,6 +186,6 @@ public class TachyonManifold
     {
         System.out.println(beams.stream()
                 .sorted(Comparator.comparing(b -> b.location().x()))
-                .toList());
+                .toList() + "  total " + countBeams());
     }
 }
