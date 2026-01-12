@@ -25,7 +25,7 @@ public class Main extends Challenge
 {
     public Main()
     {
-        super(2025, 7, Part.TWO, SourceFile.DATA);
+        super(2025, 7, Part.TWO, SourceFile.MOCK_DATA);
         debug = true;
     }
 

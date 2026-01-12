@@ -30,10 +30,6 @@ public class TachyonManifold
         this.source = origin.location();
     }
 
-    public Location source() {
-        return source;
-    }
-
     /**
      * Are we finished with our simulation?
      */
@@ -97,16 +93,13 @@ public class TachyonManifold
     /**
      * Simulate the steps until we're done (finished is true)
      * [NOTE this doesn't reset what we've done so far]
-     * @return the number of simulation steps
      */
-    public int simulate()
+    public void simulate()
     {
-        int i;
-        for (i = 0; !finished; i++)
+        while (!finished)
         {
             simulateStep();
         }
-        return i;
     }
 
     /**
@@ -124,56 +117,51 @@ public class TachyonManifold
         {
             // create two new beams either side of the splitter
             splitCounter++;
-            createBeam(beams, beam.createNew(newLocation.moveX(-1)));
-            createBeam(beams, beam.createNew(newLocation.moveX(1)));
+            insertBeam(beams, beam.createNew(newLocation.moveX(-1)));
+            insertBeam(beams, beam.createNew(newLocation.moveX(1)));
             return;
         }
-        if (state == State.EMPTY)
-        {
-            grid.set(newLocation.x(), newLocation.y(), State.BEAM);
-        }
-        createBeam(beams, beam.createNew(newLocation));
-//        beams.add(beam.createNew(newLocation));
+        insertBeam(beams, beam.createNew(newLocation));
     }
 
     /**
      * Create and insert the given beam if it is valid
      */
-    private boolean createBeam(Collection<Beam> beams, Beam beam)
+    private void insertBeam(Collection<Beam> beams, Beam beam)
     {
+        // does the beam already exist (if so, the position is valid by induction)
         if (beams.contains(beam))
         {
             if (COLISSION_BEHAVIOUR == ColissionBehaviour.ADDITIVE)
             {
+                // get all beams which exist in this position
                 List<Beam> beamInstances = beams.stream()
                         .filter(b -> b.equals(beam))
                         .toList();
                 beams.removeAll(beamInstances);
 
+                // for all beams in this position, count how many beam instanes we have
                 long collidingBeamCount = beamInstances.stream()
                         .mapToLong(Beam::instances)
                         .sum();
 
+                // add the instances to this new beam
                 beams.add(beam.createNew(collidingBeamCount));
-                return true;
             }
-            else
-            {
-                return false;
-            }
+            return;
         }
 
+        // verify that we have a valid location
         Location location = beam.location();
-        if (!location.apply(grid::validPosition)) return false;
+        if (!location.apply(grid::validPosition)) return;
 
+        // a beam only propagates to empty or other beam cells (i.e., NOT a splitter)
         State state = location.apply(grid::get);
         if (state == State.EMPTY || state == State.BEAM)
         {
             grid.set(location.x(), location.y(), State.BEAM);
             beams.add(beam);
-            return true;
         }
-        return false;
     }
 
     @Override
@@ -186,6 +174,7 @@ public class TachyonManifold
     {
         System.out.println(beams.stream()
                 .sorted(Comparator.comparing(b -> b.location().x()))
-                .toList() + "  total " + countBeams());
+                .toList()
+            + "  total " + countBeams());
     }
 }
