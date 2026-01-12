@@ -4,27 +4,27 @@
 
 package aoc.y2025.day7;
 
-import aoc.shared.Location;
+import aoc.shared.Point2d;
 
 import java.util.Objects;
 
 public class Beam
 {
-    private final Location location;
+    private final Point2d location;
     private final long instances;
 
-    private Beam(Location location, long instances)
+    private Beam(Point2d location, long instances)
     {
         this.location = location;
         this.instances = instances;
     }
 
-    public Beam(Location location)
+    public Beam(Point2d location)
     {
         this(location, 1);
     }
 
-    public Location location()
+    public Point2d location()
     {
         return location;
     }
@@ -40,7 +40,7 @@ public class Beam
     /**
      * Create a new beam in the given location with the same instance count as the original beam
      */
-    public Beam createNew(Location location)
+    public Beam createNew(Point2d location)
     {
         return new Beam(location, instances);
     }

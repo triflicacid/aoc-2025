@@ -160,9 +160,9 @@ public class Grid<T>
 
     public record Cell<T>(int x, int y, T state)
     {
-        public Location location()
+        public Point2d location()
         {
-            return new Location(x, y);
+            return new Point2d(x, y);
         }
     }
 }

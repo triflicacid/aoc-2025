@@ -5,7 +5,7 @@
 package aoc.y2025.day7;
 
 import aoc.shared.Grid;
-import aoc.shared.Location;
+import aoc.shared.Point2d;
 
 import java.util.*;
 
@@ -14,7 +14,7 @@ public class TachyonManifold
     public ColissionBehaviour COLISSION_BEHAVIOUR = ColissionBehaviour.MERGE;
 
     private final Grid<State> grid;
-    private final Location source;
+    private final Point2d source;
     private Set<Beam> beams = new HashSet<>(); // store latest location of all tachyon beams
     private int splitCounter = 0;
     private boolean finished = false;
@@ -109,7 +109,7 @@ public class TachyonManifold
     private void processBeam(Collection<Beam> beams, Beam beam)
     {
         // advance beam by one
-        Location newLocation = beam.location().moveY(1);
+        Point2d newLocation = beam.location().addY(1);
         if (!newLocation.apply(grid::validPosition)) return;
 
         State state = newLocation.apply(grid::get);
@@ -117,8 +117,8 @@ public class TachyonManifold
         {
             // create two new beams either side of the splitter
             splitCounter++;
-            insertBeam(beams, beam.createNew(newLocation.moveX(-1)));
-            insertBeam(beams, beam.createNew(newLocation.moveX(1)));
+            insertBeam(beams, beam.createNew(newLocation.addX(-1)));
+            insertBeam(beams, beam.createNew(newLocation.addX(1)));
             return;
         }
         insertBeam(beams, beam.createNew(newLocation));
@@ -152,7 +152,7 @@ public class TachyonManifold
         }
 
         // verify that we have a valid location
-        Location location = beam.location();
+        Point2d location = beam.location();
         if (!location.apply(grid::validPosition)) return;
 
         // a beam only propagates to empty or other beam cells (i.e., NOT a splitter)
